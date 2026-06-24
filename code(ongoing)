@@ -1,0 +1,61 @@
+#Libraries
+from fastapi import FastAPI
+from pydantic import BaseModel
+import httpx
+from google import genai
+
+#Input design
+class TravelRequest(BaseModel):
+    departure_city: str
+    budget: int 
+    max_flight_hours: int 
+    trip_length_days: int 
+    individuals: int
+    domestic: str
+    interests: list[str] 
+    preferred_weather: str | None
+
+destinations = ["Tokyo", "Dubai", "London", "Bangkok",
+"Istanbul"]
+
+def classify_budget(budget: int):
+    if budget < 500:
+        return "low"
+    elif 500 <= budget <= 2000: 
+        return "mid"
+    else:
+        return "high"
+
+def create_trip_summary(travel_request: TravelRequest):
+    return f"The perfect travel plan for {travel_request.individuals} people from {travel_request.departure_city} for {travel_request.trip_length_days}"
+
+def score_destination(destination, budget_level):
+    score = 0
+
+    if budget_level == "low":
+        score += 1
+    elif budget_level == "high":
+        score += 3 
+
+    return score
+
+
+
+@app.post("/travel")
+def request(travel_request : TravelRequest):
+    trip_summary = create_trip_summary(travel_request)
+    budget_level = classify_budget(travel_request.budget)
+
+    values = {"departure_city": travel_request.departure_city,
+     "max_flight_hours": travel_request.max_flight_hours,
+     "trip_length_days": travel_request.trip_length_days,
+     "budget": travel_request.budget,
+     "individuals": travel_request.individuals,
+     "domestic": travel_request.domestic,
+     "interests": travel_request.interests,
+     "preferred_weather": travel_request.preferred_weather,
+     "trip_summary": trip_summary,
+     "budget_level": budget_level
+     }
+
+    return values
