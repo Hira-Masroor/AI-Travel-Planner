@@ -39,7 +39,17 @@ def score_destination(destination, budget_level):
 
     return score
 
+best_score = 0
+best_destination = ""
 
+for place in destinations:
+    score = score_destination(place, budget_level)
+
+    if score > best_score:
+        best_score = score
+        best_destination = place
+    
+    return best_destination
 
 @app.post("/travel")
 def request(travel_request : TravelRequest):
