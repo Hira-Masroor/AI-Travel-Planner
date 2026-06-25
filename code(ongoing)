@@ -15,8 +15,7 @@ class TravelRequest(BaseModel):
     interests: list[str] 
     preferred_weather: str | None
 
-destinations = ["Tokyo", "Dubai", "London", "Bangkok",
-"Istanbul"]
+destinations = ["Tokyo", "Dubai", "London", "Bangkok", "Istanbul"]
 
 def classify_budget(budget: int):
     if budget < 500:
@@ -29,27 +28,30 @@ def classify_budget(budget: int):
 def create_trip_summary(travel_request: TravelRequest):
     return f"The perfect travel plan for {travel_request.individuals} people from {travel_request.departure_city} for {travel_request.trip_length_days}"
 
-def score_destination(destination, budget_level):
+def score_destination(destination, budget_level, interests):
     score = 0
 
-    if budget_level == "low":
+    if budget_level == "low" and destination == "Bangkok":
         score += 1
-    elif budget_level == "high":
-        score += 3 
 
-    return score
+    elif budget_level == "mid" and (destination == "Dubai" or destination == "Istanbul"):
+        score += 3
 
-best_score = 0
-best_destination = ""
+    elif budget_level == "high" and (destination == "Tokyo" or destination == "London"):
+        score += 5
 
-for place in destinations:
-    score = score_destination(place, budget_level)
-
-    if score > best_score:
-        best_score = score
-        best_destination = place
+    for interest in interests:
+        if interest == "anime" and destination == "Tokyo":
+            score += 1
+        elif interest == "food" and (destination == "Istanbul" or destination == "Bangkok"):
+            score += 3
+        elif interest == "luxury" and (destination == "London" or destination == "Dubai"):
+            score += 5
     
-    return best_destination
+    
+    return score
+    
+
 
 @app.post("/travel")
 def request(travel_request : TravelRequest):
@@ -68,4 +70,18 @@ def request(travel_request : TravelRequest):
      "budget_level": budget_level
      }
 
-    return values
+    best_score = 0
+    best_destination = ""
+
+    for place in destinations:
+        score = score_destination(place, budget_level)
+
+        if score > best_score:
+            best_score = score
+            best_destination = place
+    
+    return best_destination
+
+    values["best_destination"] = best_destination
+
+return values
