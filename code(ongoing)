@@ -43,9 +43,9 @@ def score_destination(destination, budget_level, interests):
     for interest in interests:
         if interest == "anime" and destination == "Tokyo":
             score += 1
-        elif interest == "food" and (destination == "Istanbul" or destination == "Bangkok"):
+        if interest == "food" and (destination == "Istanbul" or destination == "Bangkok"):
             score += 3
-        elif interest == "luxury" and (destination == "London" or destination == "Dubai"):
+        if interest == "luxury" and (destination == "London" or destination == "Dubai"):
             score += 5
     
     
