@@ -16,6 +16,14 @@ class TravelRequest(BaseModel):
     preferred_weather: str | None
 
 destinations = ["Tokyo", "Dubai", "London", "Bangkok", "Istanbul"]
+weather = {
+    "Tokyo" : "mild",
+    "Dubai" : "hot",
+    "London" : "cold",
+    "Bangkok" : "hot",
+    "Istanbul" : "mild"
+
+}
 
 def classify_budget(budget: int):
     if budget < 500:
@@ -28,7 +36,7 @@ def classify_budget(budget: int):
 def create_trip_summary(travel_request: TravelRequest):
     return f"The perfect travel plan for {travel_request.individuals} people from {travel_request.departure_city} for {travel_request.trip_length_days}"
 
-def score_destination(destination, budget_level, interests):
+def score_destination(destination, budget_level, interests, preferred_weather):
     score = 0
 
     if budget_level == "low" and destination == "Bangkok":
@@ -49,14 +57,21 @@ def score_destination(destination, budget_level, interests):
             score += 5
     
     
-    return score
-    
+    if preferred_weather == "cold" and destination == "London":
+        score += 1
+    if preferred_weather == "hot" and (destination == "Dubai" or destination == "Bangkok"):
+        score += 3 
+    if preferred_weather == "mild" and (destination == "Tokyo" or destination == "Istanbul"):
+        score += 5
 
+    return score
+         
 
 @app.post("/travel")
 def request(travel_request : TravelRequest):
     trip_summary = create_trip_summary(travel_request)
     budget_level = classify_budget(travel_request.budget)
+    interests = travel_request.interests
 
     values = {"departure_city": travel_request.departure_city,
      "max_flight_hours": travel_request.max_flight_hours,
@@ -74,14 +89,12 @@ def request(travel_request : TravelRequest):
     best_destination = ""
 
     for place in destinations:
-        score = score_destination(place, budget_level)
+        score = score_destination(place, budget_level, interests)
 
         if score > best_score:
             best_score = score
             best_destination = place
     
-    return best_destination
-
     values["best_destination"] = best_destination
 
-return values
+    return values
